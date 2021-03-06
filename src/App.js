@@ -40,7 +40,7 @@ function App() {
   const [countries, setCountries] = useState([])
   const [rates, setRates] = useState([])
   const [base, setBase] = useState(1)
-  const [from, setFrom] = useState('')
+  const [from, setFrom] = useState(null)
 
   useEffect(() => {
     async function fetchData() {
