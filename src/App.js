@@ -17,7 +17,6 @@ const selectStyles = {
   menu: (provided, state) => ({
     ...provided,
     width: state.selectProps.width,
-    borderBottom: '1px dotted pink',
     color: '#fff',
     backgroundColor: state.isFocused ? '#04C53A' : '#000',
     margin: '0 16px',
@@ -41,13 +40,14 @@ function App() {
   const [countries, setCountries] = useState([])
   const [rates, setRates] = useState([])
   const [base, setBase] = useState(1)
-  const [from, setFrom] = useState('USD')
+  const [from, setFrom] = useState('')
 
   useEffect(() => {
     async function fetchData() {
       const [countries, rates] = await Promise.all([getCountries(), getRates()])
       setCountries(countries)
       setRates(rates)
+      setFrom(Object.keys(countries)[0])
     }
     fetchData()
   }, [])
@@ -61,20 +61,22 @@ function App() {
   }
 
   const convert = (to) => {
-    if (!base) return 0.00
+    if (!base && from) return 0.00
 
     return (base * (rates[to] * 1 / rates[from])).toFixed(2)
   }
 
-  const selectOptions = _map(countries, (key, value) => ({ value, label: key }))
+  const selectOptions = _map(countries, (key, value) => ({ value, label: key })) || []
   return (
     <div className="app">
       <div className="converter">
         <div className="header">
           <span>Currency converter</span>
         </div>
+        {!!selectOptions.length && (
         <div className="content">
           <Select
+            defaultValue={selectOptions[0]}
             components={{
               IndicatorSeparator: () => null
             }}
@@ -94,6 +96,7 @@ function App() {
             ))}
           </div>
           </div>
+        )}
       </div>
     </div>
   );
