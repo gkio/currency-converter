@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import _map from 'lodash.map'
 import Select from 'react-select'
+import { TYPES, setLocal, getLocal } from './utils/helpers/local';
 import './App.scss';
 import { getCountries, getRates } from './utils/api';
 
@@ -39,7 +40,7 @@ const selectStyles = {
 function App() {
   const [countries, setCountries] = useState([])
   const [rates, setRates] = useState([])
-  const [base, setBase] = useState(1)
+  const [base, setBase] = useState(getLocal(TYPES.VALUE) || 1)
   const [from, setFrom] = useState(null)
 
   useEffect(() => {
@@ -52,11 +53,27 @@ function App() {
     fetchData()
   }, [])
 
+  const getSavedCurrency = (options) => {
+    const currency = getLocal(TYPES.CURRENCY)
+    console.log(currency)
+    if(currency) {
+      return options.filter(({ value }) => value === currency)[0]
+    }
+    
+    return options[0]
+  }
+
+  const saveCurrency = (value) => {
+    setLocal(TYPES.CURRENCY, value)
+    setFrom(value)
+  }
+
   const setValue = ({ target: { value } }) => {
     const reg = /^[0-9\b]+$/;
 
     if ((value === '' || reg.test(value)) && value.length < 10) {
       setBase(+value)
+      setLocal(TYPES.VALUE, value)
     }
   }
 
@@ -76,14 +93,14 @@ function App() {
         {!!selectOptions.length && (
         <div className="content">
           <Select
-            defaultValue={selectOptions[0]}
+            defaultValue={getSavedCurrency(selectOptions)}
             components={{
               IndicatorSeparator: () => null
             }}
             styles={selectStyles}
             isSearchable={false}
             theme={selectTheme}
-            onChange={({ value }) => setFrom(value)} 
+            onChange={({ value }) => saveCurrency(value)} 
             options={selectOptions}
           />
           <input value={base} pattern="[0-9]*" onChange={setValue}/>
